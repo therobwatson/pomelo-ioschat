@@ -49,17 +49,32 @@
 - (void)initEvents
 {
     [pomelo onRoute:@"onAdd" withCallback:^(NSDictionary *data){
-        NSLog(@"user add -----");
-        NSString *name = [data objectForKey:@"user"];
+        NSLog(@"user add -----\n:%@", data);
+        NSDictionary* body = [data objectForKey:@"body"];
+        if (!body) {
+            NSLog(@"ContactsViewController->initEvents: missing body in response data");
+            return;
+        }
+        NSString *name = [body objectForKey:@"user"];
+        if ([name isEqual:[NSNull null]]) NSLog(@"name is NSNull null");
+        if (name == NULL) NSLog(@"name is NULL");
+        if (!name) NSLog(@"!name is true");
         [self.tableView beginUpdates];
         [contactList addObject:name];
         NSArray *paths = [NSArray arrayWithObject:[NSIndexPath indexPathForRow:[contactList count]-1 inSection:0]];
         [self.tableView insertRowsAtIndexPaths:paths withRowAnimation:UITableViewRowAnimationTop];
         [self.tableView endUpdates];
     }];
+
     [pomelo onRoute:@"onLeave" withCallback:^(NSDictionary *data){
         NSLog(@"user leave ----");
-        NSString *name = [data objectForKey:@"user"];
+
+        NSDictionary* body = [data objectForKey:@"body"];
+        if (!body) {
+            NSLog(@"ContactsViewController->initEvents: missing body in response data");
+            return;
+        }
+        NSString *name = [body objectForKey:@"user"];
         if ([contactList containsObject:name]) {
             NSUInteger index = [contactList indexOfObject:name];
             [contactList removeObjectAtIndex:index];

@@ -41,7 +41,14 @@
         [pomelo notifyWithRoute:@"chat.chatHandler.send" andParams:data];
     } else {
         [pomelo requestWithRoute:@"chat.chatHandler.send" andParams:data andCallback:^(NSDictionary *result){
-            [chatStr appendFormat:@"you says to %@: %@\n", self.target, [data objectForKey:@"content"]];
+
+            NSDictionary* body = [data objectForKey:@"body"];
+            if (!body) {
+                NSLog(@"ChatViewController->send: missing body in response data");
+                return;
+            }
+
+            [chatStr appendFormat:@"you says to %@: %@\n", self.target, [body objectForKey:@"content"]];
             [self updateChat];
         }];
     }
@@ -69,8 +76,14 @@
 {
     [pomelo onRoute:@"onChat" withCallback:^(NSDictionary *data){
         NSLog(@"onChat------");
-        NSString *target = [[data objectForKey:@"target"] isEqualToString:@"*"] ? @"" : @" to you";
-        [chatStr appendFormat:@"%@ says%@: %@\n", [data objectForKey:@"from"], target, [data objectForKey:@"msg"] ];
+        NSDictionary* body = [data objectForKey:@"body"];
+        if (!body) {
+            NSLog(@"ChatViewController->initEvents: missing body in response data");
+            return;
+        }
+
+        NSString *target = [[body objectForKey:@"target"] isEqualToString:@"*"] ? @"" : @" to you";
+        [chatStr appendFormat:@"%@ says%@: %@\n", [body objectForKey:@"from"], target, [body objectForKey:@"msg"] ];
         [self updateChat];
     }];
 }
